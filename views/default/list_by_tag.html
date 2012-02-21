@@ -1,0 +1,18 @@
+  {{extend 'layout.html'}}
+  
+  <h3>Google App Engine: Many-to-many JOIN</h3>
+  <h3>Google App Engine: Display Cities and Countries</h3>
+  
+  <h4>Tags by Image</h4>
+  <table border="1">
+    <tr>
+        <th>Image Title</th>
+        <th>Tag Name(s)</th>
+    </tr>
+    {{for k,v in imgdict.iteritems():}}
+        <tr>
+            <td>{{ =k }}</td>
+            <td>{{ =v }}</td>
+        </tr>
+    {{pass}}
+  </table>
