@@ -38,13 +38,24 @@ response.subtitle = T('Many to Many Test')
 ##########################################
 response.menu = [
     ['Home', False, URL(request.application,'default','index')],
-    ['My Tags', False, URL(request.application,'default','list_tags')],
-    ['Add Tag', False, URL(request.application,'default','add_tag')],
-    ['My Images', False, URL(request.application,'default','list_images')],
-    ['Add Image', False, URL(request.application,'default','add_image')],
-    ['Show Images By Tag', False, URL(request.application,'default','list_by_tag')],
-    ['Show Images By ImgTag', False, URL(request.application,'default','list_by_image_imagetag')],
-    ['Show Tags By Image', False, URL(request.application,'default','list_by_image')],
+    
+    (T('Tags'), False, URL('default','index'), [
+    
+    (T('My Tags'), False, URL(request.application,'default','list_tags'),[]),
+    (T('Add Tag'), False, URL(request.application,'default','add_tag'),[]),
+    (T('My Images'), False, URL(request.application,'default','list_images'),[]),
+    (T('Add Image'), False, URL(request.application,'default','add_image'),[],
+    ),        
+    ]),            
+        
+
+    (T('Show'), False, URL('default','index'), [
+        (T('Show By Tag'), False, URL('default','list_by_tag'), []),            
+        (T('Show By ImgTag'), False, URL('default','list_by_image_imagetag'), []),
+        (T('Show By Image'), False, URL('default','list_by_image'), []),
+        (T('Tag Summary'), False, URL('gaetagger','list_tag_summary'), [],
+        ),        
+    ]),            
     ]
 
 '''
@@ -61,4 +72,29 @@ response.menu = [
         ['Add Roadtrip', False, URL(request.application,'default','add_collection')],
         ['Published Roadtrips', False, URL(request.application,'default','published_collections')],
         ]
+        
+        
+        response.menu = [
+            (T('Home'), False, URL('default','index'), []),
+
+            (T('Patients'), False, URL('default','list_patient'), [
+                (T('Register'), False, URL('default','new'), []),        
+                (T('Search'), False, URL('default','list_status'), []),
+                (T('Status'), False, URL('default','status'), []),       
+            ]),   
+
+            (T('Reports'), False, URL('default','index'), [
+                (T('Aggregate'), False, URL('default','custom_form'), []),        
+                (T('Ajax Status'), False, URL('default','search'), []),
+            ]),
+            
+            (T('PtCrud'), False, URL('ptcrud','index'), []),            
+            (T('CrudTest'), False, URL('default','crud_patient'), []),
+            (T('CrudManage'), False, URL('default','crud_manage'), [],
+            ),
+            
+            
+            ]        
+        
+        
 '''

@@ -277,7 +277,8 @@ def test_bulk_insert():
     ddlist.append(d2)
     ddlist.append(d3)
     
-    imgids = db.imagetag.bulk_insert(**dict(ddlist))
+    imgids = db.imagetag.bulk_insert([d1],[d2],[d3])
+    #imgids = db.imagetag.bulk_insert(**ddlist)
     
     #imgids = db.imagetag.bulk_insert(**ddlist)
     #imgids = db.imagetag.bulk_insert(*ddlist)

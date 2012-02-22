@@ -5,7 +5,8 @@
 #########################################################################
 ## This is a tag controller which works with GAE models
 ## - handle all tag related actions
-## - build tag list
+## - build tag summary (all tags)
+## - build list for selected tag
 #########################################################################
 
 import datetime
@@ -20,10 +21,11 @@ def list_tag_summary():
     dtags ={}
     for row in tags:
         dtags[row.id] = row.name        
-    # Sort images by tag_id    
-    
+    # Sort images by tag_id        
     imgtags=db(db.imagetag.id>0).select(orderby=db.imagetag.tag_id)
-    #imgtags=db(db.imagetag.id>0).select(orderby=db.imagetag.tag_id).as_dict
+    imgdict =db(db.imagetag.id>0).select(orderby=db.imagetag.tag_id).as_dict()
+    imglist =db(db.imagetag.id>0).select(orderby=db.imagetag.tag_id).as_list()
+    
     # retrieve 'as_dict' for easier group by 
     rdict = {}
     taglist =[]
@@ -31,27 +33,32 @@ def list_tag_summary():
         # break on change of id
         #tag =  db(db.tag.id==row.tag_id).select().first()
         tagname = dtags[int(row.tag_id)]
-        if tagname in rdict.keys():
-            rdict[tagname] += 1
+        # create a tuple here
+        dkey = (tagname,row.tag_id)
+        if dkey in rdict.keys():
+            rdict[dkey] += 1
         else:
-            rdict[tagname] = 1
-    return rdict
+            rdict[dkey] = 1
+            
+    # Convert this to a list of dicts
+    # containing id, count, name/link    
+    dictlist =[]
+    for k,v in rdict.iteritems():
+        ddnew = {}
+        #ddnew['id'] =
+        # unpack tuple
+        id, name = k
+        ddnew['id'] = id
+        ddnew['count'] = v
+        #ddnew['name'] = A( XML(name), _href='/gaedemo/gaetagger/getbytag/%s' %id).xml()
+        ddnew['name'] = A( XML(id), _href='/gaedemo/gaetagger/getbytag/%s' %name)
         
-        #if row.tag_id != tagid:
-            #if tagid >0:
-                #rdict[tag.name] = tagcnt
-            #tagid = row.tag_id
-            ## get the tagname
-            #tag =  db(db.tag.id==row.tag_id).select().first()
-            #tagname = tag.name
-            #tagcnt = 1
-        #else:    
-            ##tagid = row.tag_id
-            #tagcnt += 1
-    ## don't forget the last one
-    #rdict[tagname] = tagcnt
-    #return rdict
-
+        dictlist.append(ddnew)
+    
+    # return custom results
+    return dict(tagsummary=dictlist)
+        
+    
 def gettagsummary():
     """
     Get list of tags and related counts (from imagetag table) - user can then view by tag

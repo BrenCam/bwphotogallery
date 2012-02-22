@@ -116,3 +116,19 @@ db.define_table(
     Field('tag_id')
     )
 
+""" See py slice example  -   http://www.web2pyslices.com/slices/take_slice/16 """
+db.define_table(
+    'xtg',
+    Field('name')
+    )
+
+db.define_table(
+    'xim',
+    Field('title')
+    )
+
+db.define_table(
+    'xref',
+    Field('xtg', db.xtg),
+    Field('xim', db.xim)
+    )

@@ -1,0 +1,19 @@
+  {{extend 'layout.html'}}
+  
+  <h3>Google App Engine Demo: List Tag Summary</h3>
+  
+  <h4>Tags by Image</h4>
+  <table border="1">
+    <tr>
+        <th>Tag ID</th>
+        <th>Item Count</th>
+        <th>Link</th>
+    </tr>
+    {{for item in tagsummary:}}
+        <tr>
+            <td>{{ =item['id']}}</td>
+            <td>{{ =item['count']}}</td>
+            <td>{{ =item['name'] }}</td>
+        </tr>
+    {{pass}}
+  </table>
