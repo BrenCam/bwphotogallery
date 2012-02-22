@@ -75,7 +75,7 @@ def query_by_img():
         
     return
 
-def list_by_image():
+def list_by_tag():
     """
     build a dict of tags and related images
     """
@@ -86,12 +86,16 @@ def list_by_image():
         tlist = []
         for r in rows:
             tlist.append(r.xim.title)
-        # key is a tuple of tag name and tag count        
-        dk = (tag.name,len(tlist))
+        # key is a tuple of tag name and tag count a
+        # ?? key needs to include pk of the tag rec for future reference 
+        # nested tuple value
+        tpl = (tag.id,tag.name)      
+        dk = (tpl,len(tlist))
+        #dk = (tag.name,len(tlist))
         tagdict[dk] = tlist    
     return tagdict
 
-def list_by_tag():
+def list_by_image():
     """
     build a dict of images and related tags
     """
@@ -107,3 +111,29 @@ def list_by_tag():
         imgdict[dk] = tlist    
     return imgdict
 
+#----------------------------------------------------------------------
+def list_tagsummary():
+    """
+    built a list of tags and counts
+    link to fn to retrieve related images    
+    """
+    imgdict = list_by_tag()
+    #imgdict = list_by_image()
+    dictlist =[]
+    for k,v in imgdict.iteritems():
+        ddnew = {}
+        #ddnew['id'] =
+        # unpack tuple
+        kinfo, count = k
+        id, name = kinfo
+        #name = v
+        ddnew['id'] = id
+        ddnew['name'] = name
+        ddnew['count'] = count
+        # bug here -  need to return tag pk,  need to capture and save in dict
+#        ddnew['name'] = A( XML(id), _href='/gaedemo/gaetagger/getbytag/%s' %id).xml()
+        ddnew['link'] = A( XML(count), _href='/gaedemo/gaetagger/getbytag/%s' %id).xml()
+        #ddnew['name'] = A( XML(id), _href='/gaedemo/gaetagger/getbytag/%s' %name)
+        dictlist.append(ddnew)
+    # return custom results
+    return dict(tagsummary=dictlist)
