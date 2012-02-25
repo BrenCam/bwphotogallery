@@ -1,0 +1,16 @@
+  {{extend 'layout.html'}}
+  
+  <h3>Display Jpeg Images</h3>
+  
+  <table border="1">
+    <tr>
+       <th>Image Title</th>
+       <th>Image</th>         
+    </tr>
+    {{for img in images:}}
+        <tr>
+            {{= TD(img.title)}}
+            {{= TD(IMG(_src=URL("show_image", args=img.id), _alt=img.title)) }}            
+        </tr>
+    {{pass}}
+  </table>

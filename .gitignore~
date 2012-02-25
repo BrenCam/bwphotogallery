@@ -48,7 +48,7 @@ tmp*.html
 # User Defined folders #
 # to exclude from web2py apps #
 ###############################
-#databases/
+databases/
 errors/
 static/
 static_v0/

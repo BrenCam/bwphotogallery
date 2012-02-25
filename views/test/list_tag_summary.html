@@ -1,0 +1,30 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,True}}
+{{extend 'layout.html'}}
+
+ <h3>Google App Engine Demo: Display Selected Images</h3>
+
+    <!--- This is the tag which will be replaced by the AJAX call  -->
+     <div id="imglist" style=""></div>
+
+{{block right_sidebar}}
+    <br>Find by Tag<br/>
+    <input Type="TextBox" name="search" onkeyup="ajax('get_by_name', ['search'], 'imglist')"
+    value="Find By Name" trim="true" id="search" propercase="true" style="width: 10em">
+    <p/><b>Tag Summary</b>
+    <div id='tagsummary'></div>
+    
+  <table border="1">
+    <tr>
+        <th>Tag Name</th>
+        <th>Count</th>
+    </tr>
+    {{for item in tagsummary:}}
+        <tr>
+            <td>{{ =item['link'] }}</td>
+            <td>{{ =item['count']}}</td>
+        </tr>
+    {{pass}}
+  </table>
+
+{{end}}
+

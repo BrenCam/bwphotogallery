@@ -53,7 +53,7 @@ response.menu = [
         (T('Show By Tag'), False, URL('default','list_by_tag'), []),            
         (T('Show By ImgTag'), False, URL('default','list_by_image_imagetag'), []),
         (T('Show By Image'), False, URL('default','list_by_image'), []),
-        (T('Tag Summary'), False, URL('gaetagger','list_tag_summary'), [],
+        (T('Tag Summary'), False, URL('test','list_tag_summary'), [],
         ),        
     ]),            
     ]

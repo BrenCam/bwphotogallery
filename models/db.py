@@ -122,10 +122,22 @@ db.define_table(
     Field('name')
     )
 
+user_id='Test'
+# Image table - includes ref to image blob + lat/long for location/google map
 db.define_table(
     'xim',
-    Field('title')
+    Field('title', unique=True), 
+    Field('description','text'),
+    Field('latitude'),
+    Field('longitude'),
+    Field('image','upload'),
+    Field('image_url'),
+    #Field('created_by', db.auth_user, default=user_id, writable=False, readable=False),
+    Field('created_on','datetime', default=request.now, writable=False, readable=False),
+    Field('modified_on','datetime',default=request.now,writable=False,readable=False)
     )
+
+#db.xim.title.requires = IS_NOT_IN_DB(db, db.xim.title)
 
 db.define_table(
     'xref',

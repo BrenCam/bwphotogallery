@@ -72,7 +72,8 @@ def data():
     
 def list_images():
     #~ tags=db(db.tag.created_by==auth.user_id).select(orderby=db.tag.title)
-    images=db(db.image.id>0).select(orderby=db.image.title)
+    #images=db(db.image.id>0).select(orderby=db.image.title)
+    images=db(db.xim.id>0).select(orderby=db.xim.title)
     return dict(images=images)
     
 def edit_image():

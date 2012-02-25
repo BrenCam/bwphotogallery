@@ -1,8 +1,13 @@
-  {{extend 'layout.html'}}
+{{extend 'layout.html'}}
+{{left_sidebar_enabled,right_sidebar_enabled=False,True}}
   
-  <h3>Google App Engine Demo: List Tag Summary</h3>
-  
-  <h4>Tags by Image</h4>
+ <h3>Google App Engine Demo: Display Selected Images</h3>
+
+    <!--This is the tag which will be replaced by the AJAX call  -->
+     <div id="reslist" style=""></div>
+
+{{block right_sidebar}}
+  <h6>{{=T("Tag Summary?")}}</h6>
   <table border="1">
     <tr>
         <th>Tag ID</th>
@@ -17,3 +22,6 @@
         </tr>
     {{pass}}
   </table>
+
+{{end}}
+
