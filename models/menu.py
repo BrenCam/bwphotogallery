@@ -56,7 +56,14 @@ response.menu = [
         (T('Tag Summary'), False, URL('test','list_tag_summary'), [],
         ),        
     ]),            
+
+    (T('Test'), False, URL('default','index'), [
+        (T('List Images'), False, URL('test','list_images'), []),            
+        (T('Add Image'), False, URL('test','add_image'), [],
+        ),        
+    ]),            
     ]
+
 
 '''
     response.menu = [

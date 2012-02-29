@@ -213,7 +213,9 @@ def edit_image():
 
 def add_image():
 
-    form = SQLFORM(db.xim, _name='xim_form', 
+    url = URL('download')
+    form = SQLFORM(db.xim, _name='xim_form',
+            upload=url, 
             fields=['title', 'description', 'image'])
 
     #if request.vars.nprid:
@@ -222,6 +224,8 @@ def add_image():
         #form.vars.title = request.vars.title
     #if request.vars.url:
         #form.vars.url = request.vars.url
+    if request.vars.image != None:
+        form.vars.image_filename = request.vars.image.filename
 
     if form.process().accepted:
         response.flash='record inserted'
@@ -255,14 +259,77 @@ def show_image():
     
     if not request.args[0]:  return None
     id = request.args[0]
-    #response.headers['Content-Type']='image/jpeg'    
+    response.headers['Content-Type']='image/jpeg'    
     #image=db(db.xim.id==25).select(orderby=db.xim.title).first()
     image=db(db.xim.id==id).select()    
+    #return image
     return image[0].image_blob
     #return image[0].image
 
     
     
+# custom form to upload to google blob engine
+#@auth.requires_login()
+def upload_art():
+    """
+    This is where an artist uploads a work of art.
+    """
+    form = SQLFORM(db.artwork,
+                   fields=['title',
+                           'type',
+                           'completed_date',
+                           'image'])
     
+    if request.env.web2py_runtime_gae:
+          
+        from google.appengine.ext import blobstore
+        import uuid
+        #get the blob_info.  NOTE this MUST be done before any other operations on
+        # the request vars.  otherwise something modifies them (perhaps the form
+        # validators) in a way that makes this not work
+        blob_info = None
+        if request.vars.image != None:
+            blob_info = blobstore.parse_blob_info(request.vars.image)
+      
+        upload_url = blobstore.create_upload_url(URL(r=request,f='upload_art',
+                                                     args=request.args))
+    
+        form['_action']=upload_url
+        if form.accepts(request.vars,session, formname="artworkform"):
+            #@TODO: can this blob-key update be a post-validation function?
+            #get the record we just inserted/modified
+            row = db(db.artwork.id == form.vars.id).select().first()
+            if request.vars.image__delete == 'on' or \
+                (form.vars.image != None and (row and row.blob_key)):
+                #remove from blobstore because of delete or update of image
+                key = row.blob_key
+                blobstore.delete(key)
+                #remove reference in the artwork record
+                row.update_record(blob_key=None, image=None)
+            if form.vars.image != None:
+                #add reference to image in this record
+                row.update_record(image = \
+                    "artwork.image."+str(uuid.uuid4()).replace('-','')+".jpg",
+                    blob_key = blob_info.key())
+            crud.archive(form)
+            #Raise the HTTP exception so that the response content stays empty.
+            #calling redirect puts content in the body which fails the blob upload
+            raise HTTP(303,
+                       Location= URL(r=request,f='index'))
+        elif form.errors:
+            #logging.info("form not accepted")
+            logging.info(form.errors)
+            session.flash=BEAUTIFY(form.errors)
+            #there was an error, let's delete the newly uploaded image
+            if request.vars.image != None:
+                blobstore.delete(blob_info.key())
+            #Raise the HTTP exception so that the response content stays empty.
+            #calling redirect puts content in the body which fails the blob upload
+            raise HTTP(303,
+                       Location= URL(r=request,f='upload_art'))
+    
+    return dict(form=form)    
+
+
     
 

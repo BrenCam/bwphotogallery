@@ -131,6 +131,7 @@ db.define_table(
     Field('latitude'),
     Field('longitude'),
     Field('image','upload'),
+    Field('image_filename'),
     Field('image_url'),
     #Field('created_by', db.auth_user, default=user_id, writable=False, readable=False),
     Field('created_on','datetime', default=request.now, writable=False, readable=False),
