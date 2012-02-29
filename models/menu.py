@@ -58,50 +58,11 @@ response.menu = [
     ]),            
 
     (T('Test'), False, URL('default','index'), [
-        (T('List Images'), False, URL('test','list_images'), []),            
-        (T('Add Image'), False, URL('test','add_image'), [],
+        (T('List Blob Images'), False, URL('test','list_blob_images'), []),            
+        (T('Add Blob Image'), False, URL('test','upload_image'), []),
+        #(T('Add Blob Image'), False, URL('test','upload_xim'), []),
+        (T('Add Image'), False, URL('test','add_image'), []
         ),        
     ]),            
     ]
 
-
-'''
-    response.menu = [
-        ['Home', False, URL(request.application,'default','index')],
-        ['My Stories', False, URL(request.application,'default','list_stories')],
-        ['Add Story', False, URL(request.application,'default','add_story')],
-        ['Published Stories', False, URL(request.application,'default','published_stories')],
-        ['My Neighborhoods', False, URL(request.application,'default','list_regions')],
-        ['Add Neighborhood', False, URL(request.application,'default','add_region')],
-        ['My Topics', False, URL(request.application,'default','list_topics')],
-        ['Add Topic', False, URL(request.application,'default','add_topic')],
-        ['My Roadtrips', False, URL(request.application,'default','list_collections')],
-        ['Add Roadtrip', False, URL(request.application,'default','add_collection')],
-        ['Published Roadtrips', False, URL(request.application,'default','published_collections')],
-        ]
-        
-        
-        response.menu = [
-            (T('Home'), False, URL('default','index'), []),
-
-            (T('Patients'), False, URL('default','list_patient'), [
-                (T('Register'), False, URL('default','new'), []),        
-                (T('Search'), False, URL('default','list_status'), []),
-                (T('Status'), False, URL('default','status'), []),       
-            ]),   
-
-            (T('Reports'), False, URL('default','index'), [
-                (T('Aggregate'), False, URL('default','custom_form'), []),        
-                (T('Ajax Status'), False, URL('default','search'), []),
-            ]),
-            
-            (T('PtCrud'), False, URL('ptcrud','index'), []),            
-            (T('CrudTest'), False, URL('default','crud_patient'), []),
-            (T('CrudManage'), False, URL('default','crud_manage'), [],
-            ),
-            
-            
-            ]        
-        
-        
-'''

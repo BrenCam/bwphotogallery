@@ -211,6 +211,7 @@ def edit_image():
     id=request.args(0)
     return dict(form=crud.update(db.xim.id))
 
+# add blob handling - after submit need to redirect to url
 def add_image():
 
     url = URL('download')
@@ -240,16 +241,110 @@ def add_image():
     return dict(form=form)
 
 def list_images():
+	#response.headers['Content-Type']='image/jpeg'
+	# Display Image as jpeg file - need to set HTTP Content type = image/jpeg in view
+	images=db(db.xim.id>0).select(orderby=db.xim.title)
+	#response.headers['Content-Type']='image/jpeg' 
 
-    #response.headers['Content-Type']='image/jpeg'
-    # Display Image as jpeg file - need to set HTTP Content type = image/jpeg in view
+	#i8stream = images[8].image_blob
+	#return response.stream(i8stream)
+	#return i8stream
+	return dict(images=images)
+
+def list_blob_images():
     images=db(db.xim.id>0).select(orderby=db.xim.title)
-    #response.headers['Content-Type']='image/jpeg' 
-    
-    #i8stream = images[8].image_blob
-    #return response.stream(i8stream)
     #return i8stream
     return dict(images=images)
+    
+
+# Modify handler to support blobstore
+from gluon.settings import global_settings
+from google.appengine.ext import blobstore
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.ext.webapp.util import run_wsgi_app
+
+import uuid
+import logging
+
+#modifications here to the gae handler to support gae blobstore
+#web2py controller, handle gae blobstore upload
+def upload_image():
+	"""
+	This is where an artist uploads a work of art.
+	"""
+
+	form = SQLFORM(db.xim, _name='xim_form',
+			fields=['title', 'description', 'image'])
+
+	if request.env.web2py_runtime_gae:
+		from google.appengine.ext import blobstore
+		import uuid
+		#get the blob_info.  NOTE this MUST be done before any other operations on
+		# the request vars.  otherwise something modifies them (perhaps the form
+		# validators) in a way that makes this not work
+		blob_info = None
+		if request.vars.image != None:
+			blob_info = blobstore.parse_blob_info(request.vars.image)
+
+		upload_url = blobstore.create_upload_url(URL(r=request,f='upload_image',
+													 args=request.args))
+
+		form['_action']=upload_url
+		if form.accepts(request.vars,session, formname="ximform"):
+			#@TODO: can this blob-key update be a post-validation function?
+			#get the record we just inserted/modified
+			row = db(db.xim.id == form.vars.id).select().first()
+			if request.vars.image__delete == 'on' or \
+				(form.vars.image != None and (row and row.blob_key)):
+				#remove from blobstore because of delete or update of image
+				key = row.blob_key
+				blobstore.delete(key)
+				#remove reference in the xim record
+				row.update_record(blob_key=None, image=None)
+			if form.vars.image != None:
+				#add reference to image in this record
+				row.update_record(image = \
+					"xim.image."+str(uuid.uuid4()).replace('-','')+".jpg",
+					blob_key = blob_info.key())
+			crud.archive(form)
+			#Raise the HTTP exception so that the response content stays empty.
+			#calling redirect puts content in the body which fails the blob upload
+			raise HTTP(303,
+					   Location= URL(r=request,f='list_blob_images'))
+		elif form.errors:
+			#logging.info("form not accepted")
+			logging.info(form.errors)
+			session.flash=BEAUTIFY(form.errors)
+			#there was an error, let's delete the newly uploaded image
+			if request.vars.image != None:
+				blobstore.delete(blob_info.key())
+			#Raise the HTTP exception so that the response content stays empty.
+			#calling redirect puts content in the body which fails the blob upload
+			raise HTTP(303,
+					   Location= URL(r=request,f='upload_image'))
+
+	return dict(form=form)
+
+    
+def download():
+
+    #handle non-gae download
+    if not request.env.web2py_runtime_gae or not request.args[0]:
+        return response.download(request,db)
+
+    #handle gae download
+    #~ my_uploads=db(db.xim.preview_image==request.args[0]).select()[0]
+    #my_uploads=db(db.xim.image==request.args[0]).select()[0]
+    my_uploads=db(db.xim.id==request.args[0]).select()[0]
+    if not my_uploads.blob_key:
+        return None
+    blob_info = blobstore.get(my_uploads.blob_key)
+
+    response.headers['X-AppEngine-BlobKey'] = my_uploads.blob_key;
+    response.headers['Content-Type'] = blob_info.content_type;
+    response.headers['Content-Disposition'] = "attachment; filename=%s" % blob_info.filename
+    return response.body.getvalue()
 
 #----------------------------------------------------------------------
 def show_image():
@@ -266,19 +361,23 @@ def show_image():
     return image[0].image_blob
     #return image[0].image
 
-    
-    
 # custom form to upload to google blob engine
 #@auth.requires_login()
-def upload_art():
+def upload_xim():
     """
-    This is where an artist uploads a work of art.
+    This is where images are uploaded.
     """
-    form = SQLFORM(db.artwork,
-                   fields=['title',
-                           'type',
-                           'completed_date',
-                           'image'])
+    #~ form = SQLFORM(db.artwork,
+                   #~ fields=['title',
+                           #~ 'type',
+                           #~ 'completed_date',
+                           #~ 'image'])
+                           
+    url = URL('download')
+    form = SQLFORM(db.xim, _name='xim_form',
+            upload=url, 
+            fields=['title', 'description', 'image'])
+                           
     
     if request.env.web2py_runtime_gae:
           
@@ -291,14 +390,14 @@ def upload_art():
         if request.vars.image != None:
             blob_info = blobstore.parse_blob_info(request.vars.image)
       
-        upload_url = blobstore.create_upload_url(URL(r=request,f='upload_art',
+        upload_url = blobstore.create_upload_url(URL(r=request,f='upload_xim',
                                                      args=request.args))
     
         form['_action']=upload_url
-        if form.accepts(request.vars,session, formname="artworkform"):
+        if form.accepts(request.vars,session, formname="ximform"):
             #@TODO: can this blob-key update be a post-validation function?
             #get the record we just inserted/modified
-            row = db(db.artwork.id == form.vars.id).select().first()
+            row = db(db.xim.id == form.vars.id).select().first()
             if request.vars.image__delete == 'on' or \
                 (form.vars.image != None and (row and row.blob_key)):
                 #remove from blobstore because of delete or update of image
@@ -309,13 +408,20 @@ def upload_art():
             if form.vars.image != None:
                 #add reference to image in this record
                 row.update_record(image = \
-                    "artwork.image."+str(uuid.uuid4()).replace('-','')+".jpg",
+                    "xim.image."+str(uuid.uuid4()).replace('-','')+".jpg",
                     blob_key = blob_info.key())
             crud.archive(form)
             #Raise the HTTP exception so that the response content stays empty.
             #calling redirect puts content in the body which fails the blob upload
             raise HTTP(303,
-                       Location= URL(r=request,f='index'))
+                       Location= URL(r=request,f='list_blob_images'))
+   
+    #~ if form.process().accepted:
+        #~ response.flash='record inserted'
+        #~ #xim_id = dict(form.vars)['id']
+        #~ #xim = db(db.xim.id==xim_id).select()
+        #~ redirect(URL(r=request, f='list_images'))                       
+                       #~ 
         elif form.errors:
             #logging.info("form not accepted")
             logging.info(form.errors)
@@ -326,7 +432,7 @@ def upload_art():
             #Raise the HTTP exception so that the response content stays empty.
             #calling redirect puts content in the body which fails the blob upload
             raise HTTP(303,
-                       Location= URL(r=request,f='upload_art'))
+                       Location= URL(r=request,f='upload_image'))
     
     return dict(form=form)    
 

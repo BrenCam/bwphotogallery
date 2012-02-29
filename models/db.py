@@ -124,6 +124,7 @@ db.define_table(
 
 user_id='Test'
 # Image table - includes ref to image blob + lat/long for location/google map
+# 2/28/2012 - Modify to handle google blobstore - add blob_key
 db.define_table(
     'xim',
     Field('title', unique=True), 
@@ -133,11 +134,15 @@ db.define_table(
     Field('image','upload'),
     Field('image_filename'),
     Field('image_url'),
+    Field('blob_key', readable=False, writable=False),
+    Field ('file'),
     #Field('created_by', db.auth_user, default=user_id, writable=False, readable=False),
     Field('created_on','datetime', default=request.now, writable=False, readable=False),
     Field('modified_on','datetime',default=request.now,writable=False,readable=False)
+	#represent=lambda file : A('download', _href=URL(r=request, c='test', f='download', args=file))    
     )
-
+    
+#db.xim.image.represent=lambda file : A('download', _href=URL(r=request, c='test', f='download', args=file))
 #db.xim.title.requires = IS_NOT_IN_DB(db, db.xim.title)
 
 db.define_table(
